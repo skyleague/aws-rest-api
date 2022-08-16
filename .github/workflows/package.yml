@@ -5,18 +5,7 @@ on: push
 jobs:
   typescript:
     uses: skyleague/node-standards/.github/workflows/reusable-typescript.yml@main
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  build:
-    uses: skyleague/node-standards/.github/workflows/reusable-build.yml@main
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  release:
-    needs: [typescript, build]
-    uses: skyleague/node-standards/.github/workflows/reusable-release.yml@main
     with:
-      build_artifact_name: ${{ needs.build.outputs.artifact_name }}
+      working-directory: ./scripts
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

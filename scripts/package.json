@@ -7,7 +7,14 @@
   "types": "index.d.ts",
   "sideEffects": false,
   "node-standards": {
-    "type": "library"
+    "type": "library",
+    "template": {
+      "exclude": [
+        ".github/workflows/package.yml",
+        ".github/CODEOWNERS",
+        ".vscode/settings.json"
+      ]
+    }
   },
   "engines": {
     "node": ">=14"
@@ -41,7 +48,7 @@
   },
   "devDependencies": {
     "@skyleague/node-standards": "^1.0.0",
-    "@skyleague/therefore": "^1.0.0",
+    "@skyleague/therefore": "^1.1.0",
     "typescript": "^4.7.4"
   }
 }
