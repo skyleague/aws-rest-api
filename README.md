@@ -1,5 +1,7 @@
 # SkyLeague `aws-rest-api` - AWS API Gateway REST API simplified
 
+[![tfsec](https://github.com/skyleague/aws-rest-api/actions/workflows/tfsec.yml/badge.svg?branch=main)](https://github.com/skyleague/aws-rest-api/actions/workflows/tfsec.yml)
+
 This module simplifies the deployment of AWS API Gateway REST API (v1) by consolidating all the neccessary infrastructure into this module. It leverages the capability of the REST API to deploy using the [`body`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_rest_api#body) argument, rather than deploying all the resources/methods/integrations separately. This makes for a very dynamic deployment without the hassle of maintaining the sub-resource <-> parent relations between all the path parts (for examples, see the [`aws_api_gateway_integration`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_integration) docs of Terraform).
 
 In addition, it simplifies the integration of AWS Lambda by providing a standardized syntax to integrate AWS Lambda using the `AWS_PROXY` integration, as well as creating all the neccesary permissions for the API to invoke the Lambda functionss that are integrated with it.
