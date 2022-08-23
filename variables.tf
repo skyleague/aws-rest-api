@@ -68,6 +68,11 @@ variable "vpc_endpoint_ids" {
   type        = list(string)
   default     = []
 }
+variable "vpc_id" {
+  description = "Identifier of the VPC this API should be deployed in"
+  type        = string
+  default     = null
+}
 variable "custom_access_logs_format" {
   # Reference: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#context-variable-reference
   description = "Logging format for Access Logs"
@@ -92,6 +97,11 @@ variable "custom_access_logs_format" {
 
 variable "disable_global_method_settings" {
   description = "Disable global method settings. This allows custom definitions to be created outside of this module, allowing for more advance caching/throttling setups."
+  type        = bool
+  default     = false
+}
+variable "disable_rest_api_vpc_policy" {
+  description = "Disable the creation of the aws_api_gateway_rest_api_policy. This allows manual creation of this policy rather than managed creation."
   type        = bool
   default     = false
 }
