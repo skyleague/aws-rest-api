@@ -53,9 +53,12 @@ resource "aws_api_gateway_stage" "this" {
 
   xray_tracing_enabled = var.xray_tracing_enabled
 
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.access[each.key].arn
-    format          = jsonencode(var.custom_access_logs_format)
+  dynamic "access_log_settings" {
+    for_each = var.custom_access_logs_format != null ? [var.custom_access_logs_format] : []
+    content {
+      destination_arn = aws_cloudwatch_log_group.access[each.key].arn
+      format          = jsonencode(access_log_settings.value)
+    }
   }
 
   depends_on = [
