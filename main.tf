@@ -17,6 +17,13 @@ resource "aws_api_gateway_rest_api" "this" {
   }
 
   body = jsonencode(jsondecode(data.external.spec.result.spec))
+
+  lifecycle {
+    precondition {
+      condition     = var.endpoint_type != "PRIVATE" || length(var.vpc_endpoint_ids) > 0
+      error_message = "At least one vpc_endpoint_id needs to be provided when endpoint_type=PRIVATE."
+    }
+  }
 }
 
 resource "aws_api_gateway_method_settings" "this" {

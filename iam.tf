@@ -18,3 +18,36 @@ resource "aws_cloudformation_stack" "lambda_permissions" {
     ]...)
   })
 }
+
+data "aws_iam_policy_document" "vpc_invoke" {
+  count = var.endpoint_type == "PRIVATE" && !var.disable_rest_api_vpc_policy ? 1 : 0
+  dynamic "statement" {
+    for_each = var.stages
+    content {
+      effect = "Deny"
+      principals {
+        type        = "*"
+        identifiers = ["*"]
+      }
+      actions   = ["execute-api:Invoke"]
+      resources = ["execute-api:/${statement.value}/*/*"]
+      condition {
+        test     = "StringNotEquals"
+        variable = "aws:sourceVpc"
+        values   = [var.vpc_id]
+      }
+    }
+  }
+}
+resource "aws_api_gateway_rest_api_policy" "vpc_invoke" {
+  count       = var.endpoint_type == "PRIVATE" && !var.disable_rest_api_vpc_policy ? 1 : 0
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  policy      = data.aws_iam_policy_document.vpc_invoke[count.index].json
+
+  lifecycle {
+    precondition {
+      condition     = var.endpoint_type != "PRIVATE" || var.vpc_id != null || var.disable_rest_api_vpc_policy
+      error_message = "Missing vpc_id for endpoint_type=PRIVATE."
+    }
+  }
+}
