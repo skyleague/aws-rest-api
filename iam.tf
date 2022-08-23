@@ -24,6 +24,7 @@ data "aws_iam_policy_document" "vpc_invoke" {
   dynamic "statement" {
     for_each = var.stages
     content {
+      # Deny everything NOT coming from the VPC
       effect = "Deny"
       principals {
         type        = "*"
@@ -36,6 +37,19 @@ data "aws_iam_policy_document" "vpc_invoke" {
         variable = "aws:sourceVpc"
         values   = [var.vpc_id]
       }
+    }
+  }
+  dynamic "statement" {
+    for_each = var.stages
+    content {
+      # Otherwise, allow invoking the API endpoints
+      effect = "Allow"
+      principals {
+        type        = "*"
+        identifiers = ["*"]
+      }
+      actions   = ["execute-api:Invoke"]
+      resources = ["execute-api:/${statement.value}/*/*"]
     }
   }
 }
