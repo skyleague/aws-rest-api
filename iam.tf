@@ -3,7 +3,7 @@ resource "aws_cloudformation_stack" "lambda_permissions" {
   template_body = jsonencode({
     Resources = merge([
       for urlPath, config in local.definition : {
-        for httpMethod, definition in config : "AllowExecutionFromAPIGateway${substr(sha256("${upper(httpMethod)} ${urlPath}  "), 0, 8)}" => {
+        for httpMethod, definition in config : "AllowExecutionFromAPIGateway${substr(sha256("${upper(httpMethod)} ${urlPath}"), 0, 8)}" => {
           Type = "AWS::Lambda::Permission"
           Properties = {
             FunctionName = definition.lambda.function_name
@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "vpc_invoke" {
         identifiers = ["*"]
       }
       actions   = ["execute-api:Invoke"]
-      resources = ["execute-api:/${statement.value}/*/*"]
+      resources = ["arn:aws:execute-api:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.this.id}/${statement.value}/*/*"]
       condition {
         test     = "StringNotEquals"
         variable = "aws:sourceVpc"
@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "vpc_invoke" {
         identifiers = ["*"]
       }
       actions   = ["execute-api:Invoke"]
-      resources = ["execute-api:/${statement.value}/*/*"]
+      resources = ["arn:aws:execute-api:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.this.id}/${statement.value}/*/*"]
     }
   }
 }
