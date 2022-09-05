@@ -1,4 +1,5 @@
 import type { ApiDefinitionInput } from './input.type'
+import { stableHash } from './util'
 
 function formatMethod(method: string): string {
     method = method.toLowerCase()
@@ -42,23 +43,79 @@ function collectPathParameters(p: string, config: Record<string, unknown>) {
 }
 
 export function createOpenApiSpec({ input, extensions }: { input: ApiDefinitionInput; extensions: string | undefined }) {
+    const ext = JSON.parse(extensions ?? '{}') as Record<string, unknown>
+    const authorizers = Object.values(input).flatMap((configs) =>
+        Object.values(configs)
+            .map(({ authorizer }) => {
+                if (authorizer === undefined) {
+                    return undefined
+                }
+                const {
+                    name,
+                    lambda,
+                    header = 'Authorization',
+                    authorizerType = 'request',
+                    identitySource,
+                    cacheTtl = 0,
+                    ...config
+                } = authorizer
+                return [
+                    name,
+                    {
+                        type: 'apiKey',
+                        'x-amazon-apigateway-authtype': 'custom',
+                        ...config,
+                        in: 'header',
+                        name: header,
+                        'x-amazon-apigateway-authorizer': {
+                            type: authorizerType,
+                            identitySource: identitySource ?? `method.request.header.${header}`,
+                            authorizerUri: lambda?.invoke_arn,
+                            authorizerResultTtlInSeconds: cacheTtl,
+                            ...(config['x-amazon-apigateway-authorizer'] as Record<string, unknown>),
+                        },
+                    },
+                ] as const
+            })
+            .filter(<T>(x: T | undefined): x is T => x !== undefined)
+    )
+    const authorizerNames = [...new Set(authorizers.map(([name]) => name))]
+    for (const name of authorizerNames) {
+        const matches = authorizers.filter(([n]) => n === name).map(([, a]) => a)
+        if (matches.length > 1 && [...new Set(matches.map(stableHash))].length !== 1) {
+            throw new Error(`Encountered mismatching definitions for authorizer: ${name}`)
+        }
+    }
+    const components = {
+        ...(ext?.components as Record<string, unknown>),
+        securitySchemes: {
+            ...((ext?.components as Record<string, unknown>)?.securitySchemes as Record<string, unknown>),
+            ...Object.fromEntries(authorizers),
+        },
+    }
     return {
         openapi: '3.0.1',
-        ...(JSON.parse(extensions ?? '{}') as Record<string, unknown>),
+        ...ext,
         paths: Object.fromEntries(
             Object.entries(input).map(([p, configs]) => [
                 p,
                 Object.fromEntries(
-                    Object.entries(configs).map(([method, { lambda, ...config }]) => [
+                    Object.entries(configs).map(([method, { lambda, authorizer, ...config }]) => [
                         formatMethod(method),
                         {
                             ...config,
                             parameters: collectPathParameters(p, config),
                             'x-amazon-apigateway-integration': formatLambdaIntegration(lambda, config),
+                            security:
+                                authorizer !== undefined
+                                    ? [{ [authorizer.name]: [] }, ...((config.security as unknown[] | undefined) ?? [])]
+                                    : config.security,
                         },
                     ])
                 ),
             ])
         ),
+        components:
+            Object.keys(components).length > 1 || Object.keys(components.securitySchemes).length > 0 ? components : undefined,
     }
 }

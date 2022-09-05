@@ -13,6 +13,19 @@ export interface ApiDefinitionInput {
                 function_name: string
                 [k: string]: unknown
             }
+            authorizer?: {
+                lambda?: {
+                    invoke_arn: string
+                    function_name: string
+                    [k: string]: unknown
+                }
+                name: string
+                authorizerType?: string
+                identitySource?: string
+                header?: string
+                cacheTtl?: number
+                [k: string]: unknown
+            }
             [k: string]: unknown
         }
     }
@@ -23,7 +36,7 @@ export const ApiDefinitionInput = {
     get schema() {
         return ApiDefinitionInput.validate.schema
     },
-    source: `${__dirname}input.schema`,
+    source: `${__dirname}/input.schema`,
     sourceSymbol: 'apiDefinitionInput',
     is: (o: unknown): o is ApiDefinitionInput => ApiDefinitionInput.validate(o) === true,
 } as const
@@ -38,7 +51,7 @@ export const ApiDefinitionInputStringified = {
     get schema() {
         return ApiDefinitionInputStringified.validate.schema
     },
-    source: `${__dirname}input.schema`,
+    source: `${__dirname}/input.schema`,
     sourceSymbol: 'apiDefinitionInputStringified',
     is: (o: unknown): o is ApiDefinitionInputStringified => ApiDefinitionInputStringified.validate(o) === true,
 } as const
