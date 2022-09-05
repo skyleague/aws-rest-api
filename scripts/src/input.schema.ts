@@ -1,4 +1,4 @@
-import { $object, $optional, $string, $unknown, $validator } from '@skyleague/therefore'
+import { $number, $object, $optional, $string, $unknown, $validator } from '@skyleague/therefore'
 
 const lambdaResource = $object(
     {
@@ -17,6 +17,19 @@ export const apiDefinitionInput = $validator(
                     indexSignature: $object(
                         {
                             lambda: $optional(lambdaResource),
+                            authorizer: $optional(
+                                $object(
+                                    {
+                                        lambda: $optional(lambdaResource),
+                                        name: $string(),
+                                        authorizerType: $optional($string),
+                                        identitySource: $optional($string),
+                                        header: $optional($string),
+                                        cacheTtl: $optional($number),
+                                    },
+                                    { indexSignature: $unknown }
+                                )
+                            ),
                         },
                         { indexSignature: $unknown }
                     ),
