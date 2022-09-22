@@ -52,7 +52,6 @@ resource "aws_api_gateway_deployment" "this" {
   }
 
   depends_on = [
-    aws_api_gateway_rest_api_policy.vpc_invoke,
     aws_cloudformation_stack.lambda_permissions,
   ]
 }
