@@ -2,6 +2,11 @@ resource "aws_cloudformation_stack" "lambda_permissions" {
   name = "${var.name}-lambda-permissions-${aws_api_gateway_rest_api.this.id}"
   template_body = jsonencode({
     Resources = merge(
+      {
+        NullResource = {
+          Type = "AWS::CloudFormation::WaitConditionHandle"
+        }
+      },
       merge([
         for urlPath, config in local.definition : {
           for httpMethod, definition in config : "AllowExecutionFromAPIGateway${substr(sha256("${upper(httpMethod)} ${urlPath}"), 0, 8)}" => {
