@@ -1,4 +1,4 @@
-import { createOpenApiSpec } from './create-openapi'
+import { createOpenApiSpec } from './create-openapi.js'
 
 test('simple', () => {
     expect(
@@ -25,14 +25,14 @@ test('simple', () => {
             extensions: undefined,
         })
     ).toMatchInlineSnapshot(`
-        Object {
-          "components": Object {
-            "securitySchemes": Object {
-              "barAuthorizer": Object {
+        {
+          "components": {
+            "securitySchemes": {
+              "barAuthorizer": {
                 "in": "header",
                 "name": "Authorization",
                 "type": "apiKey",
-                "x-amazon-apigateway-authorizer": Object {
+                "x-amazon-apigateway-authorizer": {
                   "authorizerResultTtlInSeconds": 0,
                   "authorizerUri": "arn:bar",
                   "identitySource": "method.request.header.Authorization",
@@ -43,16 +43,16 @@ test('simple', () => {
             },
           },
           "openapi": "3.0.1",
-          "paths": Object {
-            "/v1/foo": Object {
-              "get": Object {
+          "paths": {
+            "/v1/foo": {
+              "get": {
                 "parameters": undefined,
-                "security": Array [
-                  Object {
-                    "barAuthorizer": Array [],
+                "security": [
+                  {
+                    "barAuthorizer": [],
                   },
                 ],
-                "x-amazon-apigateway-integration": Object {
+                "x-amazon-apigateway-integration": {
                   "httpMethod": "POST",
                   "type": "aws_proxy",
                   "uri": "arn:foo",

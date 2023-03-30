@@ -1,5 +1,5 @@
-import { createOpenApiSpec } from './create-openapi'
-import { ApiDefinitionInput, ApiDefinitionInputStringified } from './input.type'
+import { createOpenApiSpec } from './create-openapi.js'
+import { ApiDefinitionInput, ApiDefinitionInputStringified } from './input.type.js'
 
 async function readInput<T>(schema: {
     is: (o: unknown) => o is T
@@ -13,14 +13,14 @@ async function readInput<T>(schema: {
     if (schema.is(input)) {
         return input
     } else {
-        throw new Error(schema.validate.errors?.[0].message ?? 'Invalid input')
+        throw new Error(schema.validate.errors?.[0]?.message ?? 'Invalid input')
     }
 }
 async function main() {
     const { definition, extensions } = await readInput(ApiDefinitionInputStringified)
     const input: unknown = JSON.parse(definition)
     if (!ApiDefinitionInput.is(input)) {
-        throw new Error(ApiDefinitionInput.validate.errors?.[0].message ?? 'Invalid input')
+        throw new Error(ApiDefinitionInput.validate.errors?.[0]?.message ?? 'Invalid input')
     }
 
     const spec = createOpenApiSpec({ input, extensions })

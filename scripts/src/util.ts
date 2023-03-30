@@ -1,4 +1,4 @@
-import { createHash } from 'crypto'
+import { createHash } from 'node:crypto'
 
 function stableValue<T>(obj: T): [string, unknown][] | T | null {
     if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {

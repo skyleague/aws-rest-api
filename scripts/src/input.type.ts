@@ -32,12 +32,14 @@ export interface ApiDefinitionInput {
 }
 
 export const ApiDefinitionInput = {
-    validate: require('./schemas/api-definition-input.schema.js') as ValidateFunction<ApiDefinitionInput>,
+    validate: (await import('./schemas/api-definition-input.schema.js'))
+        .validate10 as unknown as ValidateFunction<ApiDefinitionInput>,
     get schema() {
         return ApiDefinitionInput.validate.schema
     },
-    source: `${__dirname}/input.schema`,
-    sourceSymbol: 'apiDefinitionInput',
+    get errors() {
+        return ApiDefinitionInput.validate.errors ?? undefined
+    },
     is: (o: unknown): o is ApiDefinitionInput => ApiDefinitionInput.validate(o) === true,
 } as const
 
@@ -47,11 +49,13 @@ export interface ApiDefinitionInputStringified {
 }
 
 export const ApiDefinitionInputStringified = {
-    validate: require('./schemas/api-definition-input-stringified.schema.js') as ValidateFunction<ApiDefinitionInputStringified>,
+    validate: (await import('./schemas/api-definition-input-stringified.schema.js'))
+        .validate10 as unknown as ValidateFunction<ApiDefinitionInputStringified>,
     get schema() {
         return ApiDefinitionInputStringified.validate.schema
     },
-    source: `${__dirname}/input.schema`,
-    sourceSymbol: 'apiDefinitionInputStringified',
+    get errors() {
+        return ApiDefinitionInputStringified.validate.errors ?? undefined
+    },
     is: (o: unknown): o is ApiDefinitionInputStringified => ApiDefinitionInputStringified.validate(o) === true,
 } as const
