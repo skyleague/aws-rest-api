@@ -1,5 +1,5 @@
-import type { ApiDefinitionInput } from './input.type'
-import { stableHash } from './util'
+import type { ApiDefinitionInput } from './input.type.js'
+import { stableHash } from './util.js'
 
 function formatMethod(method: string): string {
     method = method.toLowerCase()
@@ -87,9 +87,9 @@ export function createOpenApiSpec({ input, extensions }: { input: ApiDefinitionI
         }
     }
     const components = {
-        ...(ext?.components as Record<string, unknown>),
+        ...(ext.components as Record<string, unknown>),
         securitySchemes: {
-            ...((ext?.components as Record<string, unknown>)?.securitySchemes as Record<string, unknown>),
+            ...((ext.components as Record<string, unknown> | undefined)?.securitySchemes as Record<string, unknown>),
             ...Object.fromEntries(authorizers),
         },
     }

@@ -1,5 +1,5 @@
 data "external" "spec" {
-  program = ["npx", "-y", "ts-node", "-T", "--skip-project", "${path.module}/scripts/src/index.ts"]
+  program = ["npx", "-y", "ts-node", "--esm", "-T", "--skip-project", "${path.module}/scripts/src/index.ts"]
 
   query = {
     definition = jsonencode(local.definition)
