@@ -6,10 +6,6 @@ This module simplifies the deployment of AWS API Gateway REST API (v1) by consol
 
 In addition, it simplifies the integration of AWS Lambda by providing a standardized syntax to integrate AWS Lambda using the `AWS_PROXY` integration, as well as creating all the neccesary permissions for the API to invoke the Lambda functionss that are integrated with it.
 
-## Dependencies
-
-In order to deploy this Terraform module, you need a working `node` installation available during the deployment, with accompanying `npx` executable (usually present when `node` is installed). `node` is used in order to dynamically generate the OpenAPI `body` that defines the integrations with the REST API. The `ajv` package is a required dependency for validating the input of the generation script. This can be installed in the project `node_modules` (it likely is if you're using Javascript/Typescript in your toolchain), or as a global `npm` package.
-
 ## Usage
 
 ```terraform
@@ -21,8 +17,9 @@ module "api" {
   definition = jsonencode({
     "/v1/hello-world" = {
       "GET" = {
-        # This also supports the aws_lambda_alias type
-        lambda = aws_lambda_function.hello_world
+        lambda = {
+          function_name = "prefix-hello-world"
+        }
       }
     }
   })
@@ -55,7 +52,9 @@ module "api" {
         "x-amazon-apigateway-integration" = {
           cacheKeyParameters = ["method.request.querystring.name"]
         }
-        lambda = aws_lambda_function.hello_world
+        lambda = {
+          function_name = "prefix-hello-world"
+        }
       }
     }
   })
