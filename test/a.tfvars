@@ -4,7 +4,6 @@ definition = <<DEF
     "GET" = {
       lambda = {
         function_name = "20a663b8-2c6b-4d57-9bce-be9387fb1a3e"
-        invoke_arn    = "9f6e4843-f127-4bd9-920f-1afa7da02540"
       }
     }
   }

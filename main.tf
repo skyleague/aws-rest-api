@@ -1,11 +1,3 @@
-data "external" "spec" {
-  program = ["npx", "-y", "ts-node", "--esm", "-T", "--skip-project", "${path.module}/scripts/src/index.ts"]
-
-  query = {
-    definition = jsonencode(local.definition)
-    extensions = var.extensions
-  }
-}
 resource "aws_api_gateway_rest_api" "this" {
   name        = var.name
   description = coalesce(var.description, "API for ${var.name}")
@@ -16,7 +8,7 @@ resource "aws_api_gateway_rest_api" "this" {
     vpc_endpoint_ids = var.endpoint_type == "PRIVATE" ? var.vpc_endpoint_ids : null
   }
 
-  body = jsonencode(jsondecode(data.external.spec.result.spec))
+  body = jsonencode(local.compiled_definition)
 
   lifecycle {
     precondition {
@@ -53,7 +45,6 @@ resource "aws_api_gateway_deployment" "this" {
 
   depends_on = [
     aws_api_gateway_rest_api_policy.vpc_invoke,
-    aws_cloudformation_stack.lambda_permissions,
   ]
 }
 
@@ -75,6 +66,7 @@ resource "aws_api_gateway_stage" "this" {
 
   depends_on = [
     aws_cloudwatch_log_group.execution,
-    aws_cloudformation_stack.lambda_permissions,
+    aws_lambda_permission.api_invoke,
+    aws_lambda_permission.authorizer_invoke,
   ]
 }

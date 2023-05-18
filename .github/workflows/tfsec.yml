@@ -5,6 +5,6 @@ jobs:
   tfsec:
     uses: skyleague/node-standards/.github/workflows/reusable-tfsec.yml@main
     with:
-      terraform-version: "1.2.7"
+      terraform-version: "1.4.6"
       working-directory: "./"
       tfsec-var-files: '["test/default.tfvars", "test/a.tfvars"]'
