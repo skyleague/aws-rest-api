@@ -16,15 +16,17 @@ variable "definition" {
   type = map(map(object({
     # Allow additional custom integration properties
     # Reference: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions-integration.html
-    x-amazon-apigateway-integration = optional(any)
+    x-amazon-apigateway-integration = optional(string)
 
+    parameters = optional(string)
+    responses  = optional(string)
     lambda = optional(object({
       function_name = string
     }))
     authorizer = optional(object({
       # Allow additional custom authorizer properties
       # Reference: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions-authorizer.html
-      x-amazon-apigateway-authorizer = optional(any)
+      x-amazon-apigateway-authorizer = optional(string)
 
       lambda = optional(object({
         function_name = string
