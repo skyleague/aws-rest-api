@@ -20,12 +20,12 @@ locals {
           name = coalesce(try(path_item.authorizer.header, null), "Authorization")
           "x-amazon-apigateway-authorizer" = merge(
             {
-              type           = coalesce(try(path_item.authorizer.authorizerType, null), "request")
-              identitySource = coalesce(try(path_item.authorizer.identitySource, null), "method.request.header.${coalesce(try(path_item.authorizer.header, null), "Authorization")}")
+              type                         = coalesce(try(path_item.authorizer.authorizerType, null), "request")
+              identitySource               = coalesce(try(path_item.authorizer.identitySource, null), "method.request.header.${coalesce(try(path_item.authorizer.header, null), "Authorization")}")
+              authorizerResultTtlInSeconds = coalesce(try(path_item.authorizer.resultTtlInSeconds, null), 0)
             },
             try({ authorizerUri = local.invoke_arns[path_item.authorizer.lambda.function_name] }, {}),
-            try({ authorizerResultTtlInSeconds = path_item.authorizer.resultTtlInSeconds }, {}),
-            try(path_item.authorizer["x-amazon-apigateway-authorizer"], {})
+            try(jsondecode(path_item.authorizer["x-amazon-apigateway-authorizer"]), {})
           )
         }],
       ) if try(path_item.authorizer, null) != null
@@ -41,14 +41,14 @@ locals {
   parameters = {
     for http_path, path_items in var.definition : http_path => {
       for http_method, path_item in path_items : http_method => concat(
-        try(path_item.parameters, []),
+        coalesce(try(jsondecode(path_item.parameters), null), []),
         [
           for parameter in regexall("\\{(.*\\+?)\\}", http_path) : {
             in       = "path"
             required = true
             schema   = { type = "string" }
             name     = parameter[0]
-          } if length([for param in try(path_item.parameters, []) : param if param.name == parameter[0]]) == 0
+          } if length([for param in coalesce(try(jsondecode(path_item.parameters), null), []) : param if param.name == parameter[0]]) == 0
         ]
       )
     }
@@ -70,12 +70,13 @@ locals {
     paths = {
       for http_path, path_items in var.definition : http_path => {
         for http_method, path_item in path_items : http_method == "any" ? "x-amazon-apigateway-any-method" : lower(http_method) => { for k, v in {
-          "x-amazon-apigateway-integration" = merge(try(path_item["x-amazon-apigateway-integration"], {}), try(path_item.lambda, null) != null ? {
+          "x-amazon-apigateway-integration" = merge(try(jsondecode(path_item["x-amazon-apigateway-integration"]), {}), try(path_item.lambda, null) != null ? {
             httpMethod = "POST"
             type       = "aws_proxy"
             uri        = local.invoke_arns[path_item.lambda.function_name]
           } : {})
           parameters = length(try(local.parameters[http_path][http_method], [])) > 0 ? local.parameters[http_path][http_method] : null
+          responses  = try(jsondecode(path_item.responses), null)
           security   = length(try(local.security[http_path][http_method], [])) > 0 ? local.security[http_path][http_method] : null
         } : k => v if v != null }
       }
