@@ -35,44 +35,37 @@ resource "aws_lambda_permission" "authorizer_invoke" {
   statement_id = "AllowExecutionFromAPIGatewayAuthorizer${substr(sha256("${aws_api_gateway_rest_api.this.id} ${each.key}"), 0, 8)}"
 }
 
-data "aws_iam_policy_document" "vpc_invoke" {
-  count = var.endpoint_type == "PRIVATE" && !var.disable_rest_api_vpc_policy ? 1 : 0
-  dynamic "statement" {
-    for_each = var.stages
-    content {
-      # Deny everything NOT coming from the VPC
-      effect = "Deny"
-      principals {
-        type        = "*"
-        identifiers = ["*"]
-      }
-      actions   = ["execute-api:Invoke"]
-      resources = ["arn:aws:execute-api:${local.region}:${local.account_id}:${aws_api_gateway_rest_api.this.id}/${statement.value}/*/*"]
-      condition {
-        test     = "StringNotEquals"
-        variable = "aws:sourceVpc"
-        values   = [var.vpc_id]
-      }
-    }
-  }
-  dynamic "statement" {
-    for_each = var.stages
-    content {
-      # Otherwise, allow invoking the API endpoints
-      effect = "Allow"
-      principals {
-        type        = "*"
-        identifiers = ["*"]
-      }
-      actions   = ["execute-api:Invoke"]
-      resources = ["arn:aws:execute-api:${local.region}:${local.account_id}:${aws_api_gateway_rest_api.this.id}/${statement.value}/*/*"]
-    }
-  }
+locals {
+  vpc_invoke_policy = var.endpoint_type == "PRIVATE" && !var.disable_rest_api_vpc_policy ? jsonencode({
+    Version = "2012-10-17",
+    Statement = flatten([
+      for stage in var.stages : [
+        {
+          Effect    = "Deny"
+          Principal = "*"
+          Action    = "execute-api:Invoke"
+          Resource  = "arn:aws:execute-api:${local.region}:${local.account_id}:${aws_api_gateway_rest_api.this.id}/${stage}/*/*"
+          Condition = {
+            StringNotEquals = {
+              "aws:sourceVpc" = var.vpc_id
+            }
+          }
+        },
+        {
+          Effect    = "Allow"
+          Principal = "*"
+          Action    = "execute-api:Invoke"
+          Resource  = "arn:aws:execute-api:${local.region}:${local.account_id}:${aws_api_gateway_rest_api.this.id}/${stage}/*/*"
+        }
+      ]
+    ])
+  }) : null
 }
+
 resource "aws_api_gateway_rest_api_policy" "vpc_invoke" {
   count       = var.endpoint_type == "PRIVATE" && !var.disable_rest_api_vpc_policy ? 1 : 0
   rest_api_id = aws_api_gateway_rest_api.this.id
-  policy      = data.aws_iam_policy_document.vpc_invoke[count.index].json
+  policy      = local.vpc_invoke_policy
 
   lifecycle {
     precondition {
