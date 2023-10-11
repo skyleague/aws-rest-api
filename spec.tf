@@ -43,7 +43,7 @@ locals {
       for http_method, path_item in path_items : http_method => concat(
         coalesce(try(jsondecode(path_item.parameters), null), []),
         [
-          for parameter in regexall("\\{(.*\\+?)\\}", http_path) : {
+          for parameter in regexall("\\{([a-zA-Z0-9:._$-]+\\+?)\\}", http_path) : {
             in       = "path"
             required = true
             schema   = { type = "string" }

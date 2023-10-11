@@ -1,5 +1,5 @@
 definition = {
-  "/v1/hello-world" = {
+  "/v1/as/{aId}/bs/{bId}" = {
     "GET" = {
       lambda = {
         function_name = "20a663b8-2c6b-4d57-9bce-be9387fb1a3e"
