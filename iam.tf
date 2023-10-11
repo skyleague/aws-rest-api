@@ -19,13 +19,13 @@ resource "aws_lambda_permission" "api_invoke" {
 }
 
 resource "aws_lambda_permission" "authorizer_invoke" {
-  for_each = merge([
-    for http_path, path_items in var.definition : {
-      for http_method, path_item in path_items : path_item.authorizer.name => {
+  for_each = merge(flatten([
+    for http_path, path_items in var.definition : flatten([
+      for http_method, path_item in path_items : zipmap([path_item.authorizer.name], [{
         function_name = path_item.authorizer.lambda.function_name
-      } if try(path_item.authorizer.lambda, null) != null
-    }
-  ]...)
+      }]) if try(path_item.authorizer.lambda, null) != null
+    ])
+  ])...)
 
   action        = "lambda:InvokeFunction"
   function_name = each.value.function_name
