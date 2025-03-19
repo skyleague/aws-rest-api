@@ -151,6 +151,18 @@ variable "account_id" {
   default     = null
 }
 
+variable "cache_cluster_enabled" {
+  description = "Enable caching cluster"
+  type        = bool
+  default     = false
+}
+
+variable "cache_cluster_size" {
+  description = "Caching cluster size"
+  type        = number
+  default     = 0.5
+}
+
 data "aws_caller_identity" "current" {
   count = var.account_id == null ? 1 : 0
 }
