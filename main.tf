@@ -49,10 +49,12 @@ resource "aws_api_gateway_deployment" "this" {
 }
 
 resource "aws_api_gateway_stage" "this" {
-  for_each      = var.stages
-  deployment_id = aws_api_gateway_deployment.this.id
-  rest_api_id   = aws_api_gateway_rest_api.this.id
-  stage_name    = each.value
+  for_each              = var.stages
+  deployment_id         = aws_api_gateway_deployment.this.id
+  rest_api_id           = aws_api_gateway_rest_api.this.id
+  stage_name            = each.value
+  cache_cluster_enabled = var.cache_cluster_enabled
+  cache_cluster_size    = var.cache_cluster_size
 
   xray_tracing_enabled = var.xray_tracing_enabled
 
